@@ -9,6 +9,11 @@ module Ast = {
   type expr =
     | Identifier(Identifier.t)
     | Literal(literal)
+    | Binding({
+        identifier: Identifier.t,
+        value: expr,
+        return: expr,
+      })
     | Apply({
         function_: expr,
         argument: expr,
@@ -59,6 +64,10 @@ module Evaluate = {
     // TODO: find_opt
     | Identifier(id) => env |> Environment.find(id)
     | Literal(literal) => eval_literal(literal)
+    | Binding({identifier, value, return}) =>
+      let value = eval(env, value);
+      let env = env |> Environment.add(identifier, value);
+      eval(env, return);
     | Apply({function_, argument}) =>
       let function_ =
         switch (eval(env, function_)) {
@@ -71,9 +80,14 @@ module Evaluate = {
 };
 
 let code =
-  Ast.Apply({
-    function_: Identifier("print"),
-    argument: Literal(String("Hello World")),
+  Ast.Binding({
+    identifier: "message",
+    value: Literal(String("Hello")),
+    return:
+      Apply({
+        function_: Identifier("print"),
+        argument: Identifier("message"),
+      }),
   });
 
 Evaluate.eval(Environment.initial, code);

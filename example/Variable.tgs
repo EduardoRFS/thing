@@ -1,0 +1,3 @@
+;; binding
+(let message "Hello")
+(print message)
