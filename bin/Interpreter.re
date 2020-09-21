@@ -66,7 +66,7 @@ module Evaluate = {
     | Ast.String(string) => String(string)
     | Number(n) => Number(n);
 
-  let rec eval = (env: Environment.t, code: Ast.t): Value.t =>
+  let rec eval = (env: Environment.t, {Ast.desc: code, _}): Value.t =>
     switch (code) {
     // TODO: find_opt
     | Identifier(id) => env |> Environment.find(id)
@@ -93,7 +93,6 @@ module Evaluate = {
         };
       let argument = eval(env, argument);
       function_(argument);
-    | Typed(_, expr) => eval(env, expr)
     };
 };
 

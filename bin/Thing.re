@@ -1,29 +1,24 @@
+open Ast.Builder.Default;
+
 let code =
-  Ast.Binding({
-    identifier: "add_one",
-    parameter: Some("x"),
-    value:
-      Apply({
-        function_:
-          Apply({
-            function_: Identifier("+"),
-            argument: Literal(Number(1)),
-          }),
-        argument: Identifier("x"),
-      }),
-    return:
-      Apply({
-        function_: Identifier("print"),
-        argument:
-          Apply({
-            function_: Identifier("number_to_string"),
-            argument:
-              Apply({
-                function_: Identifier("add_one"),
-                argument: Literal(Number(4)),
-              }),
-          }),
-      }),
-  });
+  bind_function(
+    ~identifier="add_one",
+    ~parameter="x",
+    ~value=
+      apply(
+        ~function_=apply(~function_=identifier("+"), ~argument=number(1)),
+        ~argument=identifier("x"),
+      ),
+    ~return=
+      apply(
+        ~function_=identifier("print"),
+        ~argument=
+          apply(
+            ~function_=identifier("number_to_string"),
+            ~argument=
+              apply(~function_=identifier("add_one"), ~argument=number(4)),
+          ),
+      ),
+  );
 
 Interpreter.eval(Interpreter.Environment.initial, code);
