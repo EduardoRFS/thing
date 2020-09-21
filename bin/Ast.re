@@ -6,7 +6,7 @@ module Types = {
   type t =
     | String
     | Number
-    | Function;
+    | Function(t, t);
 };
 
 module Ast = {
