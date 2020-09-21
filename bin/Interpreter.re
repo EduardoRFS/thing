@@ -93,6 +93,7 @@ module Evaluate = {
         };
       let argument = eval(env, argument);
       function_(argument);
+    | Typed(_, expr) => eval(env, expr)
     };
 };
 

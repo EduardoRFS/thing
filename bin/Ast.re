@@ -2,6 +2,13 @@ module Identifier = {
   type t = string;
   let compare = String.compare;
 };
+module Types = {
+  type t =
+    | String
+    | Number
+    | Function;
+};
+
 module Ast = {
   type literal =
     | String(string)
@@ -19,7 +26,8 @@ module Ast = {
     | Apply({
         function_: expr,
         argument: expr,
-      });
+      })
+    | Typed(Types.t, expr);
   type t = expr;
 };
 include Ast;
