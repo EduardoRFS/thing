@@ -4,7 +4,8 @@ module Identifier = {
 };
 module Ast = {
   type literal =
-    | String(string);
+    | String(string)
+    | Number(int);
 
   type expr =
     | Identifier(Identifier.t)
@@ -25,6 +26,7 @@ module Value = {
   type t =
     | Void
     | String(string)
+    | Number(int)
     | Function(t => t);
 };
 
@@ -47,6 +49,31 @@ module Environment = {
           | _ => failwith("should fail on type check"),
         ),
       ),
+      (
+        "number_to_string",
+        Function(
+          fun
+          | Number(n) => {
+              String(string_of_int(n));
+            }
+          | _ => failwith("should fail on type check"),
+        ),
+      ),
+      (
+        "+",
+        Function(
+          fun
+          | Number(a) =>
+            Function(
+              (
+                fun
+                | Number(b) => Number(a + b)
+                | _ => failwith("should fail on type check")
+              ),
+            )
+          | _ => failwith("should fail on type check"),
+        ),
+      ),
     ]
     |> List.to_seq
     |> of_seq;
@@ -58,7 +85,8 @@ module Evaluate = {
 
   let eval_literal =
     fun
-    | Ast.String(string) => String(string);
+    | Ast.String(string) => String(string)
+    | Number(n) => Number(n);
 
   let rec eval = (env: Environment.t, code: Ast.t): Value.t =>
     switch (code) {
@@ -92,17 +120,29 @@ module Evaluate = {
 
 let code =
   Ast.Binding({
-    identifier: "print_alias",
-    parameter: Some("message"),
+    identifier: "add_one",
+    parameter: Some("x"),
     value:
       Apply({
-        function_: Identifier("print"),
-        argument: Identifier("message"),
+        function_:
+          Apply({
+            function_: Identifier("+"),
+            argument: Literal(Number(1)),
+          }),
+        argument: Identifier("x"),
       }),
     return:
       Apply({
-        function_: Identifier("print_alias"),
-        argument: Literal(String("Hello")),
+        function_: Identifier("print"),
+        argument:
+          Apply({
+            function_: Identifier("number_to_string"),
+            argument:
+              Apply({
+                function_: Identifier("add_one"),
+                argument: Literal(Number(4)),
+              }),
+          }),
       }),
   });
 
