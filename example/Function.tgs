@@ -1,0 +1,3 @@
+;; function declaration
+(let print_alias [message] (print message)))
+(print_alias "Hello")

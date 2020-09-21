@@ -11,6 +11,7 @@ module Ast = {
     | Literal(literal)
     | Binding({
         identifier: Identifier.t,
+        parameter: option(Identifier.t),
         value: expr,
         return: expr,
       })
@@ -64,8 +65,18 @@ module Evaluate = {
     // TODO: find_opt
     | Identifier(id) => env |> Environment.find(id)
     | Literal(literal) => eval_literal(literal)
-    | Binding({identifier, value, return}) =>
+    | Binding({identifier, parameter: None, value, return}) =>
       let value = eval(env, value);
+      let env = env |> Environment.add(identifier, value);
+      eval(env, return);
+    | Binding({identifier, parameter: Some(parameter), value, return}) =>
+      let value =
+        Function(
+          argument => {
+            let env = env |> Environment.add(parameter, argument);
+            eval(env, value);
+          },
+        );
       let env = env |> Environment.add(identifier, value);
       eval(env, return);
     | Apply({function_, argument}) =>
@@ -81,12 +92,17 @@ module Evaluate = {
 
 let code =
   Ast.Binding({
-    identifier: "message",
-    value: Literal(String("Hello")),
-    return:
+    identifier: "print_alias",
+    parameter: Some("message"),
+    value:
       Apply({
         function_: Identifier("print"),
         argument: Identifier("message"),
+      }),
+    return:
+      Apply({
+        function_: Identifier("print_alias"),
+        argument: Literal(String("Hello")),
       }),
   });
 
