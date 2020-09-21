@@ -16,9 +16,21 @@ let code =
           apply(
             ~function_=identifier("number_to_string"),
             ~argument=
-              apply(~function_=identifier("add_one"), ~argument=number(4)),
+              apply(~function_=identifier("add_one"), ~argument=number(3)),
           ),
       ),
   );
 
-Interpreter.eval(Interpreter.Environment.initial, code);
+let infer_with_errors = (env, code) =>
+  try(Typecheck.infer(env, code)) {
+  | Typecheck.Failed_to_type({expected, received}) =>
+    Printf.printf(
+      "expected: %s\nreceived: %s\n",
+      Typecheck.show_typed_expr(expected),
+      Typecheck.show_typed_expr(received),
+    );
+    exit(1);
+  };
+let typed_code = infer_with_errors(Typecheck.Environment.initial, code);
+Typecheck.show_typed_ast(typed_code) |> print_endline;
+Interpreter.eval(Interpreter.Environment.initial, typed_code);
